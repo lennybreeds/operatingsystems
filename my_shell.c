@@ -75,23 +75,22 @@ void run_command(char *buf, int nbuf, int *pcp) {
   }
 
   if (redirection_left) {
-    int fd = open(file_name_l, O_RDONLY);
-    if (fd >= 0) {
-      dup(fd, 0); // Redirect stdin
-      close(fd);
-    } else {
-      printf("Failed to open file for input redirection\n");
-    }
+  int fd = open(file_name_l, O_RDONLY);
+  if (fd >= 0) {
+    close(0); // Close stdin
+    dup(fd);  // Duplicates fd to stdin (file descriptor 0)
+    close(fd);
   }
-  if (redirection_right) {
-    int fd = open(file_name_r, O_WRONLY | O_CREATE);
-    if (fd >= 0) {
-      dup(fd, 1); // Redirect stdout
-      close(fd);
-    } else {
-      printf("Failed to open file for output redirection\n");
-    }
+}
+
+if (redirection_right) {
+  int fd = open(file_name_r, O_WRONLY | O_CREATE);
+  if (fd >= 0) {
+    close(1); // Close stdout
+    dup(fd);  // Duplicates fd to stdout (file descriptor 1)
+    close(fd);
   }
+}
 
   if (strcmp(arguments[0], "cd") == 0) {
     if (chdir(arguments[1]) < 0)
