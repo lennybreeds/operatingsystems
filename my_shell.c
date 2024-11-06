@@ -48,7 +48,7 @@ void run_command(char *buf, int nbuf, int *pcp) {
   int sequence_cmd = 0;
   int sequential = 0;
   char *second_command = 0;
-  int i = 0;ƒ
+  int i = 0;
   /* Parse the command character by character. */
   for (; i < nbuf; i++) {
     while (buf[i] == ' ') i++; //Gets rid of any spaces at the beginning of the command
@@ -98,10 +98,10 @@ void run_command(char *buf, int nbuf, int *pcp) {
 
     if (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0') {
       if (ws != i) {
-          buf[i] = '\0';
-          if (num_args < 10) {
-              arguments[num_args++] = &buf[ws];
-          }
+        buf[i] = '\0';
+        if (num_args < 10) {
+            arguments[num_args++] = &buf[ws];
+        }
       }
       ws = i + 1;
     }
@@ -221,7 +221,7 @@ void run_command(char *buf, int nbuf, int *pcp) {
       //fprintf(1, "Executing command:arg0 %s, arg1 %s \n",arguments[0], arguments[1]);
     }
   }
-  
+  }
   /* Exit after command execution */
   exit(0);
 }
