@@ -2,6 +2,9 @@
 #include "user/user.h"
 #include "kernel/fcntl.h"
 
+//Declare null
+#define NULL 0
+
 /* Read a line of characters from stdin. */
 int getcmd(char *buf, int nbuf) {
   //Printing the >>> and then clearing the buffer
@@ -35,19 +38,17 @@ void run_command(char *buf, int nbuf, int *pcp) {
   int num_args = 0;
   /* Word start/end */
   int ws = 0;
-  int we = 0;
 
   int redirection_left = 0;
   int redirection_right = 0;
   char *file_name_l = NULL;
   char *file_name_r = NULL;
 
-  int p[2];
   int pipe_cmd = 0;
-
   int sequence_cmd = 0;
-
-  int i = 0;
+  int sequential = 0;
+  char *second_command = 0;
+  int i = 0;ƒ
   /* Parse the command character by character. */
   for (; i < nbuf; i++) {
     while (buf[i] == ' ') i++; //Gets rid of any spaces at the beginning of the command
@@ -108,7 +109,7 @@ void run_command(char *buf, int nbuf, int *pcp) {
   if (pipe_cmd){
     int pfd[2] //Holds the pipe data
     //Create the pipe that will be used
-    if (pip(pfd) == -1){
+    if (pipe(pfd) == -1){
       printf("Pipe has not been constructed\n");
       exit(1);
     }
@@ -170,8 +171,7 @@ void run_command(char *buf, int nbuf, int *pcp) {
         dup(fd);
         close(fd);
         
-      }
-      if (redirecttion_append_right){
+      }(two_redirection_right){){
         // open the file for writing
         int fd = open(file_name_r, O_RDWR);
         if (fd >= 0){
@@ -179,7 +179,7 @@ void run_command(char *buf, int nbuf, int *pcp) {
           char buffer[1024];
           int n;
           while ((n=read(fd, buffer, sizeof(buf))) > 0); // keep reading until the end of fole
-          // now at the edn write to the file
+          // now at the end write to the file
           close(1);
           dup(fd);
           close(fd);
@@ -215,7 +215,7 @@ void run_command(char *buf, int nbuf, int *pcp) {
       // Parent process
       wait(0);
       if (sequential){
-        run_command(second_command, strlen(second_command), pipefd);
+        run_command(second_command, strlen(second_command), pfd);
         free(second_command);
       }
       //fprintf(1, "Executing command:arg0 %s, arg1 %s \n",arguments[0], arguments[1]);
