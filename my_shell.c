@@ -289,17 +289,6 @@ int main(void) {
         // Make sure we properly null-terminate the argument list
         arguments[numargs] = 0;
 
-
-
-        // Handle the "cd" command in the parent process
-        if (numargs > 0 && strcmp(buf, "cd") == 0) {
-            if (numargs < 1) {
-                printf("cd: missing argument\n");
-            } else if (chdir(arguments[0]) != 0) {
-                printf("cd: %s: No such directory\n", arguments[0]);
-            }
-            continue;  // Skip the rest of the loop to avoid forking for "cd"
-        }
         
         // For all other commands, fork a new process
         if (fork() == 0) {
