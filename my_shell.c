@@ -141,7 +141,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
           ws = i + 1;
         }
     }
-
+    //Ending the arguments list making sure to add the last argument if there is one and can be added to the arguments list
     if (buf[ws] != '\0' && ws < nbuf  && nArgs < 10) {
         args[nArgs++] = &buf[ws];
     }
@@ -150,7 +150,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
 
   // handle pipe commands here
   if (IsPipeCommand){
-    // create a pipe to pass data between
+    // create a pipe to pass data between each of the processes
     int Pfd[2]; // holds pipe's read and write ends
 
     // create the pipe
@@ -211,6 +211,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
         wait(0);
 
       }
+      //Once they have both finished the function will continue
     }
 
   } else {
@@ -222,6 +223,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
         int file = open(fileNameR, O_WRONLY | O_CREATE | O_TRUNC);
         //Check if it failed to open the file
         if (file < 0){
+          //File has not opened properly and we report the error
           printf("Failed to open %s for writing\n", fileNameR);
           //Exit the function
           exit(1);
@@ -295,11 +297,15 @@ void run_command(char *buf, int nbuf, int *Pfd) {
 
 
 int main(void) {
+
+  //Declared some variables used in the code
   static char buf[1000];
   int pcpmain[2];
   pipe(pcpmain);
+
   int nArgs = 0;
   int ws = 0;
+
   while (getcmd(buf, sizeof(buf)) >= 0) {
     // Array to hold command args
     char *args[10];  
@@ -308,7 +314,7 @@ int main(void) {
 
     //Parsing the buffer just to check for cd command
     for (int i = 0; i < strlen(buf); i++) {
-      //Checking for a space or the end
+      //Checking for a space to mark a new argument
         if (buf[i] == ' ' ) {
            // Ensure we aren't capturing empty arguments
             if (ws != i) {  // Ensure we aren't capturing empty args
@@ -346,9 +352,10 @@ int main(void) {
 
 
 
-    // Handle the "cd" command in the parent process
+    //To make sure the cd command runs in the parent process we run it here outside of the other function 
     if (nArgs > 0 && strcmp(buf, "cd") == 0) {
         if (nArgs < 1) {
+          //There is only one argument that has been passed into the function
             printf("cd: argument is missing\n");
         } else if (chdir(args[0]) != 0) {
             printf("cd: %s: No such directory\n", args[0]);
@@ -358,12 +365,13 @@ int main(void) {
       
       // We will create a new child process here
       if (fork() == 0) {
-          // In the child process, execute the command
+          //The run command will be run in the child process here
           run_command(buf, 1000, pcpmain);
       }
 
       int child_status;
-      wait(&child_status);  // Wait for the child process to complete
+      // Wait for the child process to complete here
+      wait(&child_status);  
   }
   exit(0);
 }
