@@ -338,7 +338,7 @@ int main(void) {
 
     // Handle the "cd" command in the parent process
     if (nArgs > 0 && strcmp(buf, "cd") == 0) {
-        if (nArgs < 1) {
+        if (nArgs < 2) {
             printf("cd: argument is missing\n");
         } else if (chdir(args[0]) != 0) {
             printf("cd: %s: No such directory\n", args[0]);
