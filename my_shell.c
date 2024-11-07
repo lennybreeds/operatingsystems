@@ -156,15 +156,17 @@ void run_command(char *buf, int nbuf, int *Pfd) {
       exit(1);
     }
 
-    //printf("Executing command: %s\n", args[0]);
-
-    // fork for the left hand side of the command
+    //Creating a process for the left side of the pipe
     if (fork() == 0){
-      // redirect the stdout to the write end of the pipe
-      close(Pfd[0]); // read end of pipe
-      close(1); // close stdout
-      dup(Pfd[1]); // duplicate pipes write end to stdout
-      close(Pfd[1]); // close the write end after duplication.
+      //Redirecting end of the pipe to stdout to allow the output to transfer to the right side
+      // read end of pipe
+      close(Pfd[0]); 
+      // closing the stdout
+      close(1); 
+      // duplicate pipes write end to stdout
+      dup(Pfd[1]); 
+      // close the write end after duplication.
+      close(Pfd[1]); 
 
       // execute left hand side
       if (exec(args[0], args) == -1){
@@ -172,28 +174,37 @@ void run_command(char *buf, int nbuf, int *Pfd) {
         exit(1);
       }
     } else {
-      // in parent process after forking left command
 
+      //This is now the parent process which will handle the right side of the pipe
       // close write end of pipe as only needs to be read now
       close(Pfd[1]);
+      // This will now check if splitcommand isn't empty or ended
       if (splitCommand!= 0){
+        //Creating a new process for the right side to run a recurisve call
         if (fork() == 0){
           // in the right side command now
-          close(0); // close stding
+          // close stding
+          close(0); 
+          //Duplicating the read end
           dup(Pfd[0]);
+          //Reading the read end
           close(Pfd[0]);
 
           // recursively run this command
           run_command(splitCommand, strlen(splitCommand), Pfd);
+          //We are freeing up the memory we aren't using anymore
           free(splitCommand);
         }
       }
-      // close read end of pipe in parent
+      //closing the read end pipe in the parent
       close(Pfd[0]);
-
+      //We are waiting for the child processes to finish
       wait(0);
+
       if (splitCommand!= 0){
+
         wait(0);
+        
       }
     }
 
