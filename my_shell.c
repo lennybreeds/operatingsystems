@@ -9,13 +9,12 @@
 /* Read a line of characters from stdin. */
 int getcmd(char *buf, int nbuf) {
     // We will print the prompt that the users will see and are clearing the buffer
-    printf(">>>");
+    printf(">>> ");
 
     memset(buf, 0, nbuf);
 
     // Read the user's input into buf
     gets(buf, nbuf);
-    printf("Input command: %s\n", buf);  // Debug: show user input
     if (buf[0] == 0) {
 
         return -1;  // We return -1 if the input is empty
@@ -69,27 +68,30 @@ void run_command(char *buf, int nbuf, int *pfd) {
   //The loop will stop when it reaches the end of the buffer or the end of the command
   for (int i = 0; i < nbuf; i++) {
     //Our first if statement will check for ; and | and set the flags accordingly
-    if (buf[i] == '|' || buf[i] == ';') {
-      if (buf[i] == '|') {
-          pipe_cmd = 1;
+    if (buf[i] == ';' || buf[i] == '|' ) {
+      if (buf[i] == ';') {
+          IsSequence = 1;
       } else {
-          sequential = 1;
+          IsPipeCommand = 1;
       }
-      buf[i] = '\0';  // End the first command
+      buf[i] = '\0';  // End the first command 
       i++;  // Skip delimiter
       while (buf[i] == ' ') i++;  // Skip spaces
 
-      // Store the remaining command
-      int secondCommandLength = strlen(&buf[i]) + 1;
-      secondCommand = (char *)malloc(secondCommandLength);
-      if (secondCommand == NULL) {
-          printf("Memory allocation failed\n");
+      // We create a new string in memory to store the remaining command
+
+
+      int splitCommandLength = strlen(&buf[i]) + 1;
+      splitCommand = (char *)malloc(splitCommandLength);
+      if (splitCommand == NULL) {
+          printf("Allocation for second command has failed\n");
           exit(1);
       }
-      strcpy(secondCommand, &buf[i]);
+      // Copy the remaining command into splitCommand
+      strcpy(splitCommand, &buf[i]);
+      //We need to break the loop to avoid parsing the rest of the command as it will be done in the next recursive call
       break;
     }
-    
 
     if (buf[i] == '<') {
       buf[i] = '\0';  // End current argument
@@ -151,8 +153,8 @@ void run_command(char *buf, int nbuf, int *pfd) {
   //We first have to check if the command is a pipe command
   if (IsPipeCommand){
     // create a pipe to pass data between
-    int pfd[2];
-    // creating the pipe to be used
+    int pfd[2]; // holds pipe's read and write ends
+    // create the pipe
     if (pipe(pfd) == -1){
       printf("Pipe not constructed\n");
 
@@ -215,7 +217,7 @@ void run_command(char *buf, int nbuf, int *pfd) {
         //check if we have opened the file successfully
         if (fileName_right >= 0){
           // read to the end of the file to then append to the buffer
-          char buffer[1024];
+          char buffer[2048];
           int n;
           while ((n=read(fileName_right, buffer, sizeof(buf))) > 0); // keep reading until the end of fole
           //we now need to write to the file
@@ -303,6 +305,7 @@ int main(void) {
     static char buf[100];
     int pcp[2];
     pipe(pcp);
+
     // Read and run input commands
     // This code repeats the process of reading the command to ensure cd runs on the parent process 
     //The loop will continue until the user exits the shell
@@ -311,6 +314,7 @@ int main(void) {
         char *args[15]; 
         int numArgs = 0;
         int ws = 0;
+
         // Loop through the input buffer to extract args and run
         for (int i = 0; i < strlen(buf); i++) {
             if (buf[i] == ' ' || buf[i] == '\0' || buf[i] == '\n') {
