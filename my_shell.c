@@ -301,9 +301,11 @@ int main(void) {
     int nArgs = 0;
     int ws = 0;
 
-    // Loop through the input buffer to extract args and run
+    //Parsing the buffer just to check for cd command
     for (int i = 0; i < strlen(buf); i++) {
-        if (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0') {
+      //Checking for a space or the end
+        if (buf[i] == ' ' ) {
+           // Ensure we aren't capturing empty arguments
             if (ws != i) {  // Ensure we aren't capturing empty args
                 buf[i] = '\0';  // Null-terminate the current argument
                 if (nArgs < 10) {
@@ -313,6 +315,18 @@ int main(void) {
                 }
 
             }
+            ws = i + 1;  // Update the word start to the next character
+        }else if (buf[i] == '\0' ||  buf[i] == '\n'){
+          // Ensure we aren't capturing empty arguments
+          if (ws != i) {  
+            buf[i] = '\0';  // Null-terminate the current argument
+            if (nArgs < 10) {
+                
+                args[nArgs] = &buf[i + 1];  // Add the argument to the list
+                nArgs++;
+            }
+
+          }
             ws = i + 1;  // Update the word start to the next character
         }
     }
