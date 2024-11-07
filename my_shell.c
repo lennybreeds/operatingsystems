@@ -266,38 +266,7 @@ int main(void) {
     // this main function has been made just to ensure cd works, as it needs to be executed outside fork
     
     while (getcmd(buf, sizeof(buf)) >= 0) {
-        char *arguments[10];  // Array to hold command arguments
-        int numargs = 0;
-        int ws = 0;
-
-        // Loop through the input buffer to extract arguments and run
-        for (int i = 0; i < strlen(buf); i++) {
-            if (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0') {
-                if (ws != i) {  // Ensure we aren't capturing empty arguments
-                    buf[i] = '\0';  // Null-terminate the current argument
-                    if (numargs < 10) {
-                        
-                        arguments[numargs] = &buf[i + 1];  // Add the argument to the list
-                        numargs++;
-                    }
-
-                }
-                ws = i + 1;  // Update the word start to the next character
-            }
-        }
-
-        // Make sure we properly null-terminate the argument list
-        arguments[numargs] = 0;
-
-        
-        // For all other commands, fork a new process
-        if (fork() == 0) {
-            // In the child process, execute the command
-            run_command(buf, 100, pcp);
-        }
-
-        int child_status;
-        wait(&child_status);  // Wait for the child process to complete
+      run_command(buf, 100, pcp);
     }
 
     exit(0);
