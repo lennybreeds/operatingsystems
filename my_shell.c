@@ -123,14 +123,18 @@ void run_command(char *buf, int nbuf, int *pipefd) {
             continue;
         }
 
-        if (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0') {
-            if (ws != i) {
-                buf[i] = '\0';
-                if (nArgs < 10) {
-                    args[nArgs++] = &buf[ws];
-                }
-            }
-            ws = i + 1;
+        if (buf[i] == ' ' || buf[i] == '\0' || buf[i] == '\n') {
+          //Ensure that we aren't adding a command multiple times
+          if (ws != i) {
+              //End the command in the list
+              buf[i] = '\0';
+              //Check to see if there is less than 10 commands in the array
+              if (nArgs < 10) {
+                  args[nArgs++] = &buf[ws];
+              }
+          }
+          //Start the next argument at 1 plus where the last argument finished
+          ws = i + 1;
         }
     }
 
