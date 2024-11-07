@@ -94,6 +94,16 @@ void run_command(char *buf, int nbuf, int *pfd) {
       break;
     }
 
+    if (buf[i] == '<') {
+      buf[i] = '\0';  // End current argument
+      redirectionLeft = 1;
+      i++;
+      while (buf[i] == ' ') i++;  // Skip spaces after `<`
+      fileNameLeft = &buf[i];
+      continue;
+    }
+
+
     if (buf[i] == '>') {
         buf[i] = '\0';  // End current argument
         if (buf[i + 1] == '>') {  // Check for `>>`
