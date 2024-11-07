@@ -264,7 +264,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
 
         args[nArgs - 1] = 0;
         
-    }
+      }
 
       //Execution of command in the child process
       //Checks if the execution fails
@@ -273,7 +273,6 @@ void run_command(char *buf, int nbuf, int *Pfd) {
         exit(1);
       }
       // If exec fails
-
     } else {
       // Parent process
       wait(0);
@@ -292,59 +291,56 @@ void run_command(char *buf, int nbuf, int *Pfd) {
 
 
 int main(void) {
-    static char buf[100];
-    int pcp[2];
-    pipe(pcp);
-
-    // Read and run input commands
-    // this main function has been made just to ensure cd works, as it needs to be executed outside fork
+  static char buf[1000];
+  int pcpmain[2];
+  pipe(pcpmain);
     
-    while (getcmd(buf, sizeof(buf)) >= 0) {
-        char *args[10];  // Array to hold command args
-        int nArgs = 0;
-        int ws = 0;
+  while (getcmd(buf, sizeof(buf)) >= 0) {
+    // Array to hold command args
+    char *args[10];  
+    int nArgs = 0;
+    int ws = 0;
 
-        // Loop through the input buffer to extract args and run
-        for (int i = 0; i < strlen(buf); i++) {
-            if (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0') {
-                if (ws != i) {  // Ensure we aren't capturing empty args
-                    buf[i] = '\0';  // Null-terminate the current argument
-                    if (nArgs < 10) {
-                        
-                        args[nArgs] = &buf[i + 1];  // Add the argument to the list
-                        nArgs++;
-                    }
-
+    // Loop through the input buffer to extract args and run
+    for (int i = 0; i < strlen(buf); i++) {
+        if (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0') {
+            if (ws != i) {  // Ensure we aren't capturing empty args
+                buf[i] = '\0';  // Null-terminate the current argument
+                if (nArgs < 10) {
+                    
+                    args[nArgs] = &buf[i + 1];  // Add the argument to the list
+                    nArgs++;
                 }
-                ws = i + 1;  // Update the word start to the next character
+
             }
+            ws = i + 1;  // Update the word start to the next character
         }
-
-        // Make sure we properly null-terminate the argument list
-        args[nArgs] = 0;
-
-
-
-        // Handle the "cd" command in the parent process
-        if (nArgs > 0 && strcmp(buf, "cd") == 0) {
-            if (nArgs < 1) {
-                printf("cd: missing argument\n");
-            } else if (chdir(args[0]) != 0) {
-                printf("cd: %s: No such directory\n", args[0]);
-            }
-            continue;  // Skip the rest of the loop to avoid forking for "cd"
-        }
-        
-        // For all other commands, fork a new process
-        if (fork() == 0) {
-            // In the child process, execute the command
-            run_command(buf, 100, pcp);
-        }
-
-        int child_status;
-        wait(&child_status);  // Wait for the child process to complete
     }
 
-    exit(0);
+    // Make sure we properly null-terminate the argument list
+    args[nArgs] = 0;
+
+
+
+    // Handle the "cd" command in the parent process
+    if (nArgs > 0 && strcmp(buf, "cd") == 0) {
+        if (nArgs < 1) {
+            printf("cd: argument is missing\n");
+        } else if (chdir(args[0]) != 0) {
+            printf("cd: %s: No such directory\n", args[0]);
+        }
+        continue;  // Skip the rest of the loop to avoid forking for "cd"
+    }
+      
+      // We will create a new child process here
+      if (fork() == 0) {
+          // In the child process, execute the command
+          run_command(buf, 1000, pcpmain);
+      }
+
+      int child_status;
+      wait(&child_status);  // Wait for the child process to complete
+  }
+  exit(0);
 }
 
