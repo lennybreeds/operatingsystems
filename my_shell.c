@@ -45,14 +45,22 @@ void run_command(char *buf, int nbuf, int *Pfd) {
   /* Useful data structures and flags. */
     char *args[10];
     int nArgs = 0;
+
+
     int IsPipeCommand = 0;
     int IsSequential = 0;
+
+
     int RedirectionLeft = 0;
     int RedirectionRight = 0;
     int toRedirectionRight = 0;
+
+
     char *fileNameL = NULL;
     char *fileNameR = NULL;
     char *splitCommand= NULL;
+
+
     int ws = 0;
     
 
@@ -143,6 +151,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
     }
     //Ending the arguments list making sure to add the last argument if there is one and can be added to the arguments list
     if (buf[ws] != '\0' && ws < nbuf  && nArgs < 10) {
+        //Add the argument to the end of the arugments array
         args[nArgs++] = &buf[ws];
     }
     args[nArgs] = NULL;
