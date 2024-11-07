@@ -168,7 +168,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
 
       // execute left hand side
       if (exec(args[0], args) == -1){
-        printf("Exec failed\n");
+        printf("Execution has failed\n");
         exit(1);
       }
     } else {
@@ -197,17 +197,6 @@ void run_command(char *buf, int nbuf, int *Pfd) {
       }
     }
 
-
-
-  }
-
-  /* If this is a CD command, handle it separately */
-  else if (strcmp(args[0], "cd") == 0) {
-    if (nArgs < 2) {
-      printf("cd: missing argument\n");
-    } else if (chdir(args[1]) != 0) {
-      printf("cd: %s: No such directory\n", args[1]);
-    }
   } else {
     /* For other commands, fork a child process to execute */
     if (fork() == 0) {
