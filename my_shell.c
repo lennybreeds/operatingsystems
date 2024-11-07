@@ -33,7 +33,7 @@ int getcmd(char *buf, int nbuf) {
   at *buf and executes it.
 */
 __attribute__((noreturn))
-void run_command(char *buf, int nbuf, int *pipefd) {
+void run_command(char *buf, int nbuf, int *Pfd) {
   
   // check for a ; and make a new string after the ;
   // then can recursively call this function with that string
@@ -138,22 +138,21 @@ void run_command(char *buf, int nbuf, int *pipefd) {
         }
     }
 
-    if (ws < nbuf && buf[ws] != '\0' && nArgs < 10) {
+    if (buf[ws] != '\0' && ws < nbuf  && nArgs < 10) {
         args[nArgs++] = &buf[ws];
     }
     args[nArgs] = NULL;
-
-  /* Handle sequence commands (e.g., commands separated by ';') */
 
 
   // handle pipe commands here
   if (IsPipeCommand){
     // create a pipe to pass data between
-    int pipefd[2]; // holds pipe's read and write ends
+    int Pfd[2]; // holds pipe's read and write ends
 
     // create the pipe
-    if (pipe(pipefd) == -1){
-      printf("Pipe failed\n");
+    if (pipe(Pfd) == -1){
+      printf("Pipe wasn't constructed\n");
+      //We need to exit the function
       exit(1);
     }
 
@@ -162,10 +161,10 @@ void run_command(char *buf, int nbuf, int *pipefd) {
     // fork for the left hand side of the command
     if (fork() == 0){
       // redirect the stdout to the write end of the pipe
-      close(pipefd[0]); // read end of pipe
+      close(Pfd[0]); // read end of pipe
       close(1); // close stdout
-      dup(pipefd[1]); // duplicate pipes write end to stdout
-      close(pipefd[1]); // close the write end after duplication.
+      dup(Pfd[1]); // duplicate pipes write end to stdout
+      close(Pfd[1]); // close the write end after duplication.
 
       // execute left hand side
       if (exec(args[0], args) == -1){
@@ -176,21 +175,21 @@ void run_command(char *buf, int nbuf, int *pipefd) {
       // in parent process after forking left command
 
       // close write end of pipe as only needs to be read now
-      close(pipefd[1]);
+      close(Pfd[1]);
       if (splitCommand!= 0){
         if (fork() == 0){
           // in the right side command now
           close(0); // close stding
-          dup(pipefd[0]);
-          close(pipefd[0]);
+          dup(Pfd[0]);
+          close(Pfd[0]);
 
           // recursively run this command
-          run_command(splitCommand, strlen(splitCommand), pipefd);
+          run_command(splitCommand, strlen(splitCommand), Pfd);
           free(splitCommand);
         }
       }
       // close read end of pipe in parent
-      close(pipefd[0]);
+      close(Pfd[0]);
 
       wait(0);
       if (splitCommand!= 0){
@@ -273,7 +272,7 @@ void run_command(char *buf, int nbuf, int *pipefd) {
       // Parent process
       wait(0);
       if (IsSequential){
-        run_command(splitCommand, strlen(splitCommand), pipefd);
+        run_command(splitCommand, strlen(splitCommand), Pfd);
         free(splitCommand);
       }
       //fprintf(1, "Executing command:arg0 %s, arg1 %s \n",args[0], args[1]);
