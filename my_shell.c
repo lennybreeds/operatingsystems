@@ -56,7 +56,7 @@ void run_command(char *buf, int nbuf, int *pipefd) {
     for (int i = 0; i < nbuf; i++) {
       //First parsing our pipes and sequence
         if (buf[i] == ';' || buf[i] == '|' ) {
-          //Checking wh
+          //Checking whether the the character is a pipe or semicolon
             if (buf[i] == ';') {
                 IsSequential = 1;
             } else {
@@ -81,22 +81,30 @@ void run_command(char *buf, int nbuf, int *pipefd) {
                 exit(1);
             }
 
-
-            strcpy(splitCommand, &buf[i]);
             
+            strcpy(splitCommand, &buf[i]);
             break;
         }
 
         if (buf[i] == '>') {
-            buf[i] = '\0';  // End current argument
-            if (buf[i + 1] == '>') {  // Check for `>>`
+          //This tests whether it is a redirection into a file
+          // End the argument off
+            buf[i] = '\0';  
+            //We check to see if it is a redirection with two > as it behaves differently
+            if (buf[i + 1] == '>') { 
+
                 toRedirectionRight = 1;
+                //We need to go past the second > for it to skip the >>
                 i++;
             } else {
+
                 RedirectionRight = 1;
             }
+
             i++;
-            while (buf[i] == ' ') i++;  // Skip spaces after `>`
+            // We need to skip the spaces
+            while (buf[i] == ' ') i++;  
+            //This is the file name on the right side
             fileNameR = &buf[i];
             continue;
         }
