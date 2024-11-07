@@ -234,9 +234,9 @@ void run_command(char *buf, int nbuf, int *Pfd) {
         int file = open(fileNameR, O_RDWR);
         if (file >= 0){
           // read to the end of the file to then append
-          char buffer[1024];
+          char buff[1024];
           int n;
-          while ((n=read(file, buffer, sizeof(buf))) > 0); // keep reading until the end of fole
+          while ((n=read(file, buff, sizeof(buf))) > 0); // keep reading until the end of fole
           // now at the edn write to the file
           close(1);
           dup(file);
@@ -244,33 +244,36 @@ void run_command(char *buf, int nbuf, int *Pfd) {
         }
       }
       if (RedirectionLeft) {
-        // Open the file for reading
-        //printf("%s\n",fileNameL);
+        // Opening the file for reading only
         int file = open(fileNameL, O_RDONLY);
+        //Check if the file has opened properly
         if (file < 0) {
+
             printf("Failed to open %s for reading\n", fileNameL);
             exit(1);
+
         }
         
-        // Close stdin and redirect it to the file
-        close(0); // Close the original stdin
-        
+        // Closing the stdin
+        close(0);
+        //Duplicating the file across
         dup(file);
-          // Duplicate file onto stdin (0)
-        close(file); // Close the file descriptor as it's no longer needed
-        // need to work out how many args before '<'
+        // Close the file descriptor as it's no longer needed
+        close(file); 
+
+
         args[nArgs - 1] = 0;
-
-
         
     }
 
-      // Child process
-      //
-      if (exec(args[0], args) < 0);
+      //Execution of command in the child process
+      //Checks if the execution fails
+      if (exec(args[0], args) < 0){
+        printf("Unknown command: %s\n", args[0]);
+        exit(1);
+      }
       // If exec fails
-      printf("Unknown command: %s\n", args[0]);
-      exit(1);
+
     } else {
       // Parent process
       wait(0);
