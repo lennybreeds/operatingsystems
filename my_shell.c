@@ -44,94 +44,97 @@ void run_command(char *buf, int nbuf, int *pfd) {
   
 
   /* Useful data structures and flags. */
-    char *args[15];
-    int numArgs = 0;
+  char *args[15];
+  int numArgs = 0;
 
-    //These flags determine the future logic of the function
-    int IsPipeCommand = 0;
-    int IsSequence = 0;
+  //These flags determine the future logic of the function
+  int IsPipeCommand = 0;
+  int IsSequence = 0;
 
-    //These flags determine if we need to redirect the output or input and if we need to append
-    int redirectionLeft = 0;
-    int redirectionRight = 0;
-    int toRedirectionRight = 0;
+  //These flags determine if we need to redirect the output or input and if we need to append
+  int redirectionLeft = 0;
+  int redirectionRight = 0;
+  int toRedirectionRight = 0;
 
-    //These are the file names that we will be using for redirection
-    char *fileNameLeft = NULL;
-    char *fileNameRight = NULL;
-    char *splitCommand = NULL;
+  //These are the file names that we will be using for redirection
+  char *fileNameLeft = NULL;
+  char *fileNameRight = NULL;
+  char *splitCommand = NULL;
 
 
-    int ws = 0;
-    
-    //This loop will parse the command character by character comparing to the delimiters and setting flags
-    //The loop will stop when it reaches the end of the buffer or the end of the command
-    for (int i = 0; i < nbuf; i++) {
-      //Our first if statement will check for ; and | and set the flags accordingly
-      if (buf[i] == ';' || buf[i] == '|' ) {
-        if (buf[i] == ';') {
-            IsSequence = 1;
+  int ws = 0;
+  
+  //This loop will parse the command character by character comparing to the delimiters and setting flags
+  //The loop will stop when it reaches the end of the buffer or the end of the command
+  for (int i = 0; i < nbuf; i++) {
+    //Our first if statement will check for ; and | and set the flags accordingly
+    if (buf[i] == ';' || buf[i] == '|' ) {
+      if (buf[i] == ';') {
+          IsSequence = 1;
+      } else {
+          IsPipeCommand = 1;
+      }
+      buf[i] = '\0';  // End the first command 
+      i++;  // Skip delimiter
+      while (buf[i] == ' ') i++;  // Skip spaces
+
+      // We create a new string in memory to store the remaining command
+
+
+      int splitCommandLength = strlen(&buf[i]) + 1;
+      splitCommand = (char *)malloc(splitCommandLength);
+      
+      if (splitCommand == NULL) {
+          printf("Allocation for second command has failed\n");
+          exit(1);
+      }
+      // Copy the remaining command into splitCommand
+      strcpy(splitCommand, &buf[i]);
+      //We need to break the loop to avoid parsing the rest of the command as it will be done in the next recursive call
+      break;
+    }
+
+    if (buf[i] == '>') {
+        buf[i] = '\0';  // End current argument
+        if (buf[i + 1] == '>') {  // Check for `>>`
+          if (buf[i + 2] == ' ') {
+              toRedirectionRight = 1;
+            } else {
+              printf("Invalid syntax\n");
+              exit(1);
+            }
+            i++;
         } else {
-            IsPipeCommand = 1;
+            redirectionRight = 1;
         }
-        buf[i] = '\0';  // End the first command 
-        i++;  // Skip delimiter
-        while (buf[i] == ' ') i++;  // Skip spaces
-
-        // We create a new string in memory to store the remaining command
-
-
-        int splitCommandLength = strlen(&buf[i]) + 1;
-        splitCommand = (char *)malloc(splitCommandLength);
-        
-        if (splitCommand == NULL) {
-            printf("Allocation for second command has failed\n");
-            exit(1);
-        }
-        // Copy the remaining command into splitCommand
-        strcpy(splitCommand, &buf[i]);
-        //We need to break the loop to avoid parsing the rest of the command as it will be done in the next recursive call
-        break;
-      }
-
-      if (buf[i] == '>') {
-          buf[i] = '\0';  // End current argument
-          if (buf[i + 1] == '>') {  // Check for `>>`
-            if (buf[i + 2] == ' ') {
-                toRedirectionRight = 1;
-             } else {
-                printf("Invalid syntax\n");
-                exit(1);
-              }
-              i++;
-          } else {
-              redirectionRight = 1;
-          }
-          i++;
-          //This will skip all the spaces after the > or >>
-          while (buf[i] == ' ') i++;
-          //This sets the pointer to the file name
-          fileNameRight = &buf[i];
-          //This will skip all the characters until the next space
-          continue;
-      }
-      //We need to then check for spaces and newlines to determine the end of the argument and add it to the args array
-      if ((buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0' ) && ws != i) {
+        i++;
+        //This will skip all the spaces after the > or >>
+        while (buf[i] == ' ') i++;
+        //This sets the pointer to the file name
+        fileNameRight = &buf[i];
+        //This will skip all the characters until the next space
+        continue;
+    }
+    //We need to then check for spaces and newlines to determine the end of the argument and add it to the args array
+    if (buf[i] == ' ' || buf[i] == '\n' || buf[i] == '\0' ) {
+      if(ws != i){
         // Null-terminate the current argument
         buf[i] = '\0';
         // Add the argument to the list if there is space
         if (numArgs < 15) {
-            args[numArgs++] = &buf[ws];
+          args[numArgs++] = &buf[ws];
         }
-        // Update the word start to the next character after the space to be used later in the loop
-        ws = i + 1;
       }
+     
+      // Update the word start to the next character after the space to be used later in the loop
+      ws = i + 1;
     }
-    //Making sure that the last argument is added to the args array
-    if (numArgs < 15 && ws < nbuf && buf[ws] != '\0') {
-      args[numArgs++] = &buf[ws];
-    }
-    args[numArgs] = NULL;
+  }
+  //Making sure that the last argument is added to the args array
+  if (numArgs < 15 && ws < nbuf && buf[ws] != '\0') {
+    args[numArgs++] = &buf[ws];
+  }
+  args[numArgs] = NULL;
 
 
   //We first have to check if the command is a pipe command
