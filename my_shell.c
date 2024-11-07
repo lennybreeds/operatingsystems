@@ -191,7 +191,8 @@ void run_command(char *buf, int nbuf, int *Pfd) {
           close(Pfd[0]);
 
           // recursively run this command
-          run_command(splitCommand, strlen(splitCommand), Pfd);
+          int length = strlen(splitCommand);
+          run_command(splitCommand,length , Pfd);
           //We are freeing up the memory we aren't using anymore
           free(splitCommand);
         }
@@ -204,7 +205,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
       if (splitCommand!= 0){
 
         wait(0);
-        
+
       }
     }
 
