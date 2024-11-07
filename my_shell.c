@@ -210,42 +210,44 @@ void run_command(char *buf, int nbuf, int *Pfd) {
     }
 
   } else {
-    /* For other commands, fork a child process to execute */
     if (fork() == 0) {
       // check redirection
       if (RedirectionRight){
         
-        // open the file
-        int fd = open(fileNameR, O_WRONLY | O_CREATE | O_TRUNC);
-        if (fd < 0){
+        // we open the file correctly
+        int file = open(fileNameR, O_WRONLY | O_CREATE | O_TRUNC);
+        //Check if it failed to open the file
+        if (file < 0){
           printf("Failed to open %s for writing\n", fileNameR);
+          //Exit the function
           exit(1);
         }
-        // close the standard output, then duplicate output to file
+        // closing the standard output
         close(1);
-        dup(fd);
-        close(fd);
+        //Duplicating 
+        dup(file);
+        close(file);
         
       }
       if (toRedirectionRight){
         // open the file for writing
-        int fd = open(fileNameR, O_RDWR);
-        if (fd >= 0){
+        int file = open(fileNameR, O_RDWR);
+        if (file >= 0){
           // read to the end of the file to then append
           char buffer[1024];
           int n;
-          while ((n=read(fd, buffer, sizeof(buf))) > 0); // keep reading until the end of fole
+          while ((n=read(file, buffer, sizeof(buf))) > 0); // keep reading until the end of fole
           // now at the edn write to the file
           close(1);
-          dup(fd);
-          close(fd);
+          dup(file);
+          close(file);
         }
       }
       if (RedirectionLeft) {
         // Open the file for reading
         //printf("%s\n",fileNameL);
-        int fd = open(fileNameL, O_RDONLY);
-        if (fd < 0) {
+        int file = open(fileNameL, O_RDONLY);
+        if (file < 0) {
             printf("Failed to open %s for reading\n", fileNameL);
             exit(1);
         }
@@ -253,9 +255,9 @@ void run_command(char *buf, int nbuf, int *Pfd) {
         // Close stdin and redirect it to the file
         close(0); // Close the original stdin
         
-        dup(fd);
-          // Duplicate fd onto stdin (0)
-        close(fd); // Close the file descriptor as it's no longer needed
+        dup(file);
+          // Duplicate file onto stdin (0)
+        close(file); // Close the file descriptor as it's no longer needed
         // need to work out how many args before '<'
         args[nArgs - 1] = 0;
 
