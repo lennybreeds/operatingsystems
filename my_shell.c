@@ -54,24 +54,36 @@ void run_command(char *buf, int nbuf, int *pipefd) {
     
 
     for (int i = 0; i < nbuf; i++) {
-        if (buf[i] == '|' || buf[i] == ';') {
-            if (buf[i] == '|') {
-                IsPipeCommand = 1;
-            } else {
+      //First parsing our pipes and sequence
+        if (buf[i] == ';' || buf[i] == '|' ) {
+          //Checking wh
+            if (buf[i] == ';') {
                 IsSequential = 1;
+            } else {
+                IsPipeCommand = 1;
             }
-            buf[i] = '\0';  // End the first command
-            i++;  // Skip delimiter
-            while (buf[i] == ' ') i++;  // Skip spaces
+            //Ends the first command with a null pointer
+            buf[i] = '\0';  
+            //This then skips the delimiter
+            i++;  
+            //We need to skip all the spaces inetween the next command
+            while (buf[i] == ' ') i++; 
 
             // Store the remaining command
             int secondCommandlen = strlen(&buf[i]) + 1;
+            //This then creates space in memory for us to copy over the second half of the command
+            //This uses safe memory allocation
             splitCommand= (char *)malloc(secondCommandlen);
+
+
             if (splitCommand== NULL) {
-                printf("Memory allocation failed\n");
+                printf("Allocation in memory bas failed\n");
                 exit(1);
             }
+
+
             strcpy(splitCommand, &buf[i]);
+            
             break;
         }
 
