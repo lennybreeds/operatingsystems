@@ -6,25 +6,29 @@
 
 /* Read a line of characters from stdin. */
 int getcmd(char *buf, int nbuf) {
-    // Print >>> then clear buffer
+    //This prints the start line for the user
     printf(">>> ");
-    memset(buf, 0, nbuf);
 
-    // Read the user's input into buf
+    //This resets the buffer to 0's to start from scratch
+    memset(buf, 0, nbuf);
+    // This gets the users new input
     gets(buf, nbuf);
+    //If the buffer is empty we return the function
     if (buf[0] == 0) {
-        return -1;  // Return -1 if input is empty
+        return -1;
     }
 
-    // Remove the newline character if present
+    // If there is a new line then it is replaced with a null terminator as it is easier to do so now for later on in the code
     for (int i = 0; i < nbuf; i++) {
         if (buf[i] == '\n') {
-            buf[i] = '\0';  // Replace \n with null terminator
-            break;  // Exit the loop after replacing
+          
+            buf[i] = '\0'; 
+          // Exit the loop after replacing as we are at the end of the command
+            break;  
         }
     }
-
-    return 0;  // Return 0 on success
+    // Return 0 when the function is complete
+    return 0;  
 }
 
 
@@ -35,10 +39,9 @@ int getcmd(char *buf, int nbuf) {
 __attribute__((noreturn))
 void run_command(char *buf, int nbuf, int *Pfd) {
   
-  // check for a ; and make a new string after the ;
-  // then can recursively call this function with that string
 
-  //printf("%s command 2\n", commands[1]);
+
+
   /* Useful data structures and flags. */
     char *args[10];
     int nArgs = 0;
@@ -55,6 +58,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
 
     for (int i = 0; i < nbuf; i++) {
       //First parsing our pipes and sequence
+
         if (buf[i] == ';' || buf[i] == '|' ) {
           //Checking whether the the character is a pipe or semicolon
             if (buf[i] == ';') {
@@ -81,11 +85,24 @@ void run_command(char *buf, int nbuf, int *Pfd) {
                 exit(1);
             }
 
-            
+            //Copies across the command
             strcpy(splitCommand, &buf[i]);
             break;
         }
-
+        //Check if the redirection is to the left
+        if (buf[i] == '<') {
+          //End the current arguemnt
+            buf[i] = '\0'; 
+            //Change the flag to true for redirectionleft for later on in the code
+            RedirectionLeft = 1;
+            //Skip past the < to find the file
+            i++;
+            // Skip spaces after `<`
+            while (buf[i] == ' ') i++;  
+            //Writes the file name after the <
+            fileNameL = &buf[i];
+            continue;
+        }
         if (buf[i] == '>') {
           //This tests whether it is a redirection into a file
           // End the argument off
@@ -108,20 +125,7 @@ void run_command(char *buf, int nbuf, int *Pfd) {
             fileNameR = &buf[i];
             continue;
         }
-        //Check if the redirection is to the left
-        if (buf[i] == '<') {
-          //End the current arguemnt
-            buf[i] = '\0'; 
-            //Change the flag to true for redirectionleft for later on in the code
-            RedirectionLeft = 1;
-            //Skip past the < to find the file
-            i++;
-            // Skip spaces after `<`
-            while (buf[i] == ' ') i++;  
-            //Writes the file name after the <
-            fileNameL = &buf[i];
-            continue;
-        }
+        
 
         if (buf[i] == ' ' || buf[i] == '\0' || buf[i] == '\n') {
           //Ensure that we aren't adding a command multiple times
