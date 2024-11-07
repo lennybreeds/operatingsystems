@@ -294,12 +294,13 @@ int main(void) {
   static char buf[1000];
   int pcpmain[2];
   pipe(pcpmain);
-    
+  int nArgs = 0;
+  int ws = 0;
   while (getcmd(buf, sizeof(buf)) >= 0) {
     // Array to hold command args
     char *args[10];  
-    int nArgs = 0;
-    int ws = 0;
+    nArgs = 0;
+    ws = 0;
 
     //Parsing the buffer just to check for cd command
     for (int i = 0; i < strlen(buf); i++) {
@@ -309,25 +310,30 @@ int main(void) {
             if (ws != i) {  // Ensure we aren't capturing empty args
                 buf[i] = '\0';  // Null-terminate the current argument
                 if (nArgs < 10) {
-                    
-                    args[nArgs] = &buf[i + 1];  // Add the argument to the list
+                    //Add the argument to the list
+                    args[nArgs] = &buf[i + 1];  
                     nArgs++;
                 }
 
             }
-            ws = i + 1;  // Update the word start to the next character
+            // Update the word start to character after i
+            ws = i + 1;  
         }else if (buf[i] == '\0' ||  buf[i] == '\n'){
           // Ensure we aren't capturing empty arguments
           if (ws != i) {  
-            buf[i] = '\0';  // Null-terminate the current argument
+            // End the current argument with a null
+            buf[i] = '\0';  
+            //Check if the number of arguments is less than 10
             if (nArgs < 10) {
-                
-                args[nArgs] = &buf[i + 1];  // Add the argument to the list
+                // Add the argument to the list
+                args[nArgs] = &buf[i + 1]; 
+
                 nArgs++;
             }
 
           }
-            ws = i + 1;  // Update the word start to the next character
+          // Update the word start to character after i
+            ws = i + 1;  
         }
     }
 
