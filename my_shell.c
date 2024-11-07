@@ -108,12 +108,17 @@ void run_command(char *buf, int nbuf, int *pipefd) {
             fileNameR = &buf[i];
             continue;
         }
-
+        //Check if the redirection is to the left
         if (buf[i] == '<') {
-            buf[i] = '\0';  // End current argument
+          //End the current arguemnt
+            buf[i] = '\0'; 
+            //Change the flag to true for redirectionleft for later on in the code
             RedirectionLeft = 1;
+            //Skip past the < to find the file
             i++;
-            while (buf[i] == ' ') i++;  // Skip spaces after `<`
+            // Skip spaces after `<`
+            while (buf[i] == ' ') i++;  
+            //Writes the file name after the <
             fileNameL = &buf[i];
             continue;
         }
